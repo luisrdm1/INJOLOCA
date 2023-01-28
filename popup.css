@@ -1,0 +1,66 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    padding: 10px;
+    background-color: #adf39b41; /* Add a background color */
+  }
+  h1 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 32px;
+    text-align: center;
+    color: #333;
+  }
+  h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  /* Center the form and give it some padding */
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+  }
+  /* Style the form elements */
+  select, input, label {
+    margin-right: 10px;
+  }
+  button {
+    margin-top: 20px;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 45%;
+    color: darkolivegreen;
+    background: whitesmoke;
+    font-weight: bolder;
+  }
+  /* Style the textarea */
+  textarea {
+    margin-top: 20px;
+    width: 200px;
+    height: 200px;
+    padding: 10px;
+    font-size: 12px;
+    box-sizing: border-box;
+  }
+  .watermark {
+    background-image: url('icon128.png');
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Media query for small screens */
+@media screen and (max-width: 800px) {
+    body {
+      font-size: 14px;
+    }
+    form {
+      flex-wrap: nowrap; /* Stop the elements from wrapping */
+    }
+    /* Add some margin to the form elements */
+    select, input, label {
+      margin: 10px 0;
+    }
+  }

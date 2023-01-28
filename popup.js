@@ -1,193 +1,235 @@
 // Script por Guy Novaes
-// Extensão para o google Chrome para incluir jogos no site de Loterias Online da Caixa (https://www.loteriasonline.caixa.gov.br/).
-// É comum a Caixa modificar o site dela e ser necessário adequar este script. Este script não possui garantia alguma de funcionamento.
-// Não comunique ao autor que o script deixou de funcionar. Sinta-se à vontade para alterá-lo e distribuí-lo gratuitamente.
-// Script sem garantia. Use por sua conta e risco.
+// Contribuições: Luis Molon
+
+const lotteries = {
+    "" : null,
+    "Mais-Milionaria" : {
+        STANDARD_TICKET : 6,
+        MAX_TICKET : 12,
+        PLACEHOLDER : "1 2 3 4 5 6 T1 T2",
+        TEIMOSA : [0, 2, 3, 4 , 5]
+    },
+    "Mega-Sena" : {
+        STANDARD_TICKET : 6,
+        MAX_TICKET : 15,
+        PLACEHOLDER : "01 02 03 04 05 06",
+        TEIMOSA : [0, 2, 4, 8]
+    },
+    "Lotofácil" : {
+        STANDARD_TICKET : 15,
+        MAX_TICKET : 20,
+        PLACEHOLDER : "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15",
+        TEIMOSA : [0, 2, 3, 4, 6, 8, 9, 12, 18, 24]
+    },
+    "Quina" : {
+        STANDARD_TICKET : 5,
+        MAX_TICKET : 15,
+        PLACEHOLDER : "01 02 03 04 05",
+        TEIMOSA : [0, 3, 6, 12, 18, 24]
+    },
+    "Lotomania" : {
+        STANDARD_TICKET : 50,
+        PLACEHOLDER : "01 02 03 04 05 ... 45 46 47 48 49 50",
+        TEIMOSA : [0, 2, 3, 4, 6, 8, 9, 12]
+    },
+    "Timemania" : {
+        STANDARD_TICKET : 10,
+        PLACEHOLDER : "01 02 03 04 05 06 07 08 09 10 TM01",
+        TEIMOSA : [0, 3, 6, 9, 12]
+    },
+    "Dupla-Sena" : {
+        STANDARD_TICKET : 6,
+        MAX_TICKET : 15,
+        PLACEHOLDER : "01 02 03 04 05 06",
+        TEIMOSA : [0, 2, 3, 4, 6, 8, 9, 12]
+    },
+    "Loteca" : {
+        STANDARD_TICKET : "13 simples/1 duplo",
+        PLACEHOLDER : "X00 XX0 00X 0X0 00X 00X 0X0 X00 0X0 0X0 X00 X00 00X 00X",
+        TEIMOSA : [0]
+    },
+    "Dia-de-Sorte" : {
+        STANDARD_TICKET : 7,
+        MAX_TICKET : 15,
+        PLACEHOLDER : "01 02 03 04 05 06 07 JAN",
+        TEIMOSA : [0, 3, 6, 9, 12]
+    },
+    "Super-Sete" : {
+        STANDARD_TICKET : 7,
+        MAX_TICKET : 21,
+        PLACEHOLDER : "1 9 17 25 33 41 49",
+        TEIMOSA : [0, 3, 6, 9, 12]
+    }
+};
+
+function changeElementVisibility(id, param) {
+    document.getElementById(id).style.visibility = param
+}
+
+function getElementValue(id) {
+    return document.getElementById(id).value
+}
+
+function populatePopup(modalidade) {
+    if (modalidade != "Lotomania") {
+        changeElementVisibility("espelho", "hidden");
+        changeElementVisibility("espelhoLabel", "hidden");
+    } else {
+        changeElementVisibility("espelho", "");
+        changeElementVisibility("espelhoLabel", "");
+    }
+
+    const listadejogos = document.getElementById("listadejogos");
+    listadejogos.placeholder = ""
+
+    const quantidadeHTML = document.getElementById("quantidade");
+    quantidadeHTML.innerHTML = "";
+
+    const qtdTeimosa = document.getElementById("qtdTeimosinha");
+    qtdTeimosa.innerHTML = "";
+
+    if (lotteries[modalidade] != null) {
+
+        const {STANDARD_TICKET} = lotteries[modalidade];
+        const {MAX_TICKET} = lotteries[modalidade];
+        const {PLACEHOLDER} = lotteries[modalidade];
+        const {TEIMOSA} = lotteries[modalidade];
+        listadejogos.placeholder = PLACEHOLDER;
+        
+        if (MAX_TICKET != undefined) {
+            for (let i = STANDARD_TICKET; i <= MAX_TICKET; i++) {
+                createOption(i, i, quantidadeHTML);
+            }
+        } else {
+            createOption(STANDARD_TICKET, STANDARD_TICKET, quantidadeHTML);
+        }
+
+        for (const [key, val] of TEIMOSA.entries()) {
+            createOption(val, key, qtdTeimosa)
+        }
+    }
+}
+
+
+function createOption(text, value, parentElement) {
+    const option = document.createElement("option");
+    option.innerText = text;
+    option.value = value;
+    parentElement.appendChild(option);
+}
 
 // função que clica nos números na DOM
 function modifyDOM(linha, quantidade, qtdTeimosa, marcaEspelho) {
+    // Processamento da linha não precisa ocorrer aqui
+    const ticket = linha.trim().split(/[ \t]+/);
 
-	var volante = linha.split(' ');
-	document.getElementById('limparvolante').click();
+    if (marcaEspelho === true) {
+        document.getElementById("apostaEspelho").click();
+    }
 
-	if (marcaEspelho == 1) {
-		var esp = document.getElementById('apostaEspelho');
-		esp.click();
-	}
-	// clica no botão aumentarnumero a quantidade de vezes que o usuário selecionou
-	for(var i = 0;i < quantidade; i++){
-		document.getElementById('aumentarnumero').click();
-	}
+    const bAumentarNumero = document.getElementById("aumentarnumero");
+    // Clica no botão aumentarnumero a quantidade de vezes que o usuário selecionou
+    for (let i = 0; i < quantidade; i++) {
+        bAumentarNumero.click();
+    }
 
-	// clica no botão aumentarnumero a quantidade de vezes da Teimosinha
-	for(var i = 0;i < qtdTeimosa; i++){
-		document.getElementById('aumentarteimosinha').click();
-	}
+    const bAumentarTeimosinha = document.getElementById("aumentarteimosinha");
+    // clica no botão aumentarnumero a quantidade de vezes da Teimosinha
+    for (let i = 0; i < qtdTeimosa; i++) {
+        bAumentarTeimosinha.click();
+    }
 
-	quantidade = 0;
-	for(var i = 0;i < volante.length;i++){
-		if (volante[i] == 'T1')	quantidade = quantidade + 1;
-		if (volante[i] == 'T2')	quantidade = quantidade + 1;
-		if (volante[i] == 'T3')	quantidade = quantidade + 1;
-		if (volante[i] == 'T4')	quantidade = quantidade + 1;
-		if (volante[i] == 'T5')	quantidade = quantidade + 1;
-		if (volante[i] == 'T6')	quantidade = quantidade + 1;
-	}
+    const clovers = {
+        "T1": "trevo1", "T2": "trevo2",
+        "T3": "trevo3", "T4": "trevo4",
+        "T5": "trevo5", "T6": "trevo6"
+    };
 
-	// clica no botão aumentarnumero a quantidade trevos que o usuário selecionou
-	for(var i = 2; i < quantidade; i++){
-		document.getElementById('step6').childNodes[1].children[1].childNodes[0].click();
-	}	
+    let quantidadeTrevos = 0;
+    for (const [_, element] of ticket.entries()) {
+        if (clovers[element] != undefined) { quantidadeTrevos++ }
+    }
 
-	for(var i = 0;i < volante.length;i++){
-		var v;
+    const bAumentarTrevos =
+        document.querySelectorAll(".botao.data-aumentar-qtd-numeros-aposta-mais-milionaria")[1];
+    // clica no botão aumentarnumero a quantidade trevos que o usuário selecionou
+    for (let i = 2; i < quantidadeTrevos; i++) {
+        bAumentarTrevos.click();
+    }	
 
-		if (volante[i] == 'T1')	v = document.getElementById('trevo1').click();
-		if (volante[i] == 'T2')	v = document.getElementById('trevo2').click();
-		if (volante[i] == 'T3')	v = document.getElementById('trevo3').click();
-		if (volante[i] == 'T4')	v = document.getElementById('trevo4').click();
-		if (volante[i] == 'T5')	v = document.getElementById('trevo5').click();
-		if (volante[i] == 'T6')	v = document.getElementById('trevo6').click();
+    const meses = {
+        "JAN": 0, "FEV": 1, "MAR": 2,
+        "ABR": 3, "MAI": 4, "JUN": 5,
+        "JUL": 6, "AGO": 7, "SET": 8,
+        "OUT": 9, "NOV": 10,"DEZ": 11
+    };
 
-		if (volante[i] == 'JAN') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[1].click()
-		if (volante[i] == 'FEV') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[3].click()
-		if (volante[i] == 'MAR') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[5].click()
-		if (volante[i] == 'ABR') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[7].click()
-		if (volante[i] == 'MAI') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[9].click()
-		if (volante[i] == 'JUN') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[11].click()
-		if (volante[i] == 'JUL') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[13].click()
-		if (volante[i] == 'AGO') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[15].click()
-		if (volante[i] == 'SET') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[17].click()
-		if (volante[i] == 'OUT') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[19].click()
-		if (volante[i] == 'NOV') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[21].click()
-		if (volante[i] == 'DEZ') v = document.querySelector("#carrossel_diadesorte").childNodes[0].childNodes[23].click()
+    const teams = {};
+    
+    // Preenche os times
+    for (let i = 1; i <= 80; i++) {
+        const key = `TM${i.toString().padStart(2, '0')}`;
+        const value = i - 1;
+        teams[key] = value;
+    }
 
-		if (volante[i] == 'TM01') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[1].click()
-		if (volante[i] == 'TM02') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[3].click()
-		if (volante[i] == 'TM03') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[5].click()
-		if (volante[i] == 'TM04') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[7].click()
-		if (volante[i] == 'TM05') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[9].click()
-		if (volante[i] == 'TM06') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[11].click()
-		if (volante[i] == 'TM07') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[13].click()
-		if (volante[i] == 'TM08') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[15].click()
-		if (volante[i] == 'TM09') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[17].click()
-		if (volante[i] == 'TM10') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[19].click()
+    // Selecionando os elementos específicos por classe
+    // TODO: mover para funções específicas!
+    const mesDeSorte = document.querySelectorAll(".data-selecionar-mes-de-sorte");
+    const timeDoCoracao = document.querySelectorAll(".data-selecionar-time-do-coracao");
 
-		if (volante[i] == 'TM11') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[21].click()
-		if (volante[i] == 'TM12') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[23].click()
-		if (volante[i] == 'TM13') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[25].click()
-		if (volante[i] == 'TM14') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[27].click()
-		if (volante[i] == 'TM15') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[29].click()
-		if (volante[i] == 'TM16') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[31].click()
-		if (volante[i] == 'TM17') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[33].click()
-		if (volante[i] == 'TM18') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[35].click()
-		if (volante[i] == 'TM19') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[37].click()
-		if (volante[i] == 'TM20') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[39].click()
+    for (const [_, item] of ticket.entries()) {
+        if (clovers[item] != undefined) {
+            document.getElementById(clovers[item]).click();
+        } else if (meses[item] != undefined) {
+            mesDeSorte[meses[item]].click();
+        } else if (teams[item] != undefined) {
+            timeDoCoracao[teams[item]].click();
+        } else {
+            const numButton = document.getElementById("n" + item);
+            if (numButton != null) {
+                numButton.click();
+            } else {
+                const num = item < 10 ? `0${item}` : item;
+                document.getElementById("n" + num).click();
+            }
+        }        
+    }
 
-		if (volante[i] == 'TM21') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[41].click()
-		if (volante[i] == 'TM22') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[43].click()
-		if (volante[i] == 'TM23') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[45].click()
-		if (volante[i] == 'TM24') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[47].click()
-		if (volante[i] == 'TM25') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[49].click()
-		if (volante[i] == 'TM26') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[51].click()
-		if (volante[i] == 'TM27') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[53].click()
-		if (volante[i] == 'TM28') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[55].click()
-		if (volante[i] == 'TM29') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[57].click()
-		if (volante[i] == 'TM30') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[59].click()
+    document.getElementById("colocarnocarrinho").click();
 
-		if (volante[i] == 'TM31') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[61].click()
-		if (volante[i] == 'TM32') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[63].click()
-		if (volante[i] == 'TM33') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[65].click()
-		if (volante[i] == 'TM34') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[67].click()
-		if (volante[i] == 'TM35') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[69].click()
-		if (volante[i] == 'TM36') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[71].click()
-		if (volante[i] == 'TM37') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[73].click()
-		if (volante[i] == 'TM38') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[75].click()
-		if (volante[i] == 'TM39') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[77].click()
-		if (volante[i] == 'TM40') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[79].click()
-
-		if (volante[i] == 'TM41') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[81].click()
-		if (volante[i] == 'TM42') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[83].click()
-		if (volante[i] == 'TM43') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[85].click()
-		if (volante[i] == 'TM44') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[87].click()
-		if (volante[i] == 'TM45') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[89].click()
-		if (volante[i] == 'TM46') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[91].click()
-		if (volante[i] == 'TM47') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[93].click()
-		if (volante[i] == 'TM48') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[95].click()
-		if (volante[i] == 'TM49') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[97].click()
-		if (volante[i] == 'TM50') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[99].click()
-
-		if (volante[i] == 'TM51') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[101].click()
-		if (volante[i] == 'TM52') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[103].click()
-		if (volante[i] == 'TM53') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[105].click()
-		if (volante[i] == 'TM54') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[107].click()
-		if (volante[i] == 'TM55') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[109].click()
-		if (volante[i] == 'TM56') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[111].click()
-		if (volante[i] == 'TM57') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[113].click()
-		if (volante[i] == 'TM58') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[115].click()
-		if (volante[i] == 'TM59') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[117].click()
-		if (volante[i] == 'TM60') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[119].click()
-
-		if (volante[i] == 'TM61') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[121].click()
-		if (volante[i] == 'TM62') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[123].click()
-		if (volante[i] == 'TM63') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[125].click()
-		if (volante[i] == 'TM64') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[127].click()
-		if (volante[i] == 'TM65') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[129].click()
-		if (volante[i] == 'TM66') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[131].click()
-		if (volante[i] == 'TM67') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[133].click()
-		if (volante[i] == 'TM68') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[135].click()
-		if (volante[i] == 'TM69') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[137].click()
-		if (volante[i] == 'TM70') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[139].click()
-
-		if (volante[i] == 'TM71') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[141].click()
-		if (volante[i] == 'TM72') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[143].click()
-		if (volante[i] == 'TM73') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[145].click()
-		if (volante[i] == 'TM74') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[147].click()
-		if (volante[i] == 'TM75') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[149].click()
-		if (volante[i] == 'TM76') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[151].click()
-		if (volante[i] == 'TM77') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[153].click()
-		if (volante[i] == 'TM78') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[155].click()
-		if (volante[i] == 'TM79') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[157].click()
-		if (volante[i] == 'TM80') v = document.querySelector("#carrossel_timemania").childNodes[0].childNodes[159].click()
-
-		else
- 			v = document.getElementById('n'+volante[i] );
-		if (v != null) v.click();
-	}
-
-
-
-	document.getElementById('colocarnocarrinho').click();
-	return true; 
+    return
 }
 
 // Modulo para preencher a Loteca
 function modifyDOMLoteca(linha) {
 
-	var volante = linha.split(' ');
-	document.getElementById('limparvolante').click();
+    const volante = linha.split(/[ \t]+/);
+    document.getElementById("limparvolante").click();
 
     if (volante.length == 14) {
-        var links = document.querySelectorAll("a.loteca_palpite");
-        for(var i = 0;i < volante.length;i++){
-            for(var contador = 0; contador <= 2; contador++) {
-                if (volante[i][contador] == 'X') links[(i * 3) + contador].click();
+        let buttons = document.querySelectorAll("a.loteca_palpite");
+        for (let i = 0, l = volante.length; i < l; i++) {
+            for(let j = 0; j <= 2; j++) {
+                if (volante[i][j] == 'X') buttons[(i * 3) + j].click();
             }
         }
     
-        document.getElementById('colocarnocarrinho').click();
+        document.getElementById("colocarnocarrinho").click();
     }
 
-	return true;
+    return
 }
 
 // função para mandar executar no DOM a função marca os números.
-function marcaJogo(linha, quantidade, qtdTeimosa, marcaEspelho) {
-	chrome.tabs.executeScript({
-		code: "(" + modifyDOM + ")('"+ linha +"','" + quantidade + "','" + qtdTeimosa + "','" + marcaEspelho + "' );"
-	}, (results) => {
-		console.log('erro');
-	});
+function marcaJogo(linha, quantidade, qtdTeimosa, marcaEspelho, modalidade) {
+    const {STANDARD_TICKET} = lotteries[modalidade];
+    let diff = quantidade - STANDARD_TICKET;
+    chrome.tabs.executeScript({
+        code: `(${modifyDOM})('${linha}','${diff}','${qtdTeimosa}','${marcaEspelho}');`
+    }, (results) => {
+        console.log("marcaJogo: ", results);
+    });
 }
 
 // funcao para clicar nas modalidades do site da caixa pela extensao
@@ -195,57 +237,57 @@ function clickModalidade(modalidade) {
     document.querySelector("#menuPrincipal a#" + modalidade).click();
 }
 
-document.getElementById('modalidade').onchange = function() {
-	chrome.tabs.executeScript({
-		code: "(" + clickModalidade + ")('"+ this.value + "' );"
-	}, (results) => {
-		console.log('erro');
-	});
+document.getElementById("modalidade").onchange = function() {
+    populatePopup(this.value);
+    chrome.tabs.executeScript({
+        code: `(${clickModalidade})('${this.value}');`
+    }, (results) => {
+        console.log("modalidade.onchange: ", results);
+    });
 }
 
-function sleepFor( sleepDuration ){
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + sleepDuration){ /* faça nada */ } 
+function sleepFor(sleepDuration) {
+    const now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration) {}
 }
 
-// coloca o botão na extensão
-document.write("<button id='mybutton'>Preencher jogos</button>");
-var button = document.getElementById('mybutton');
+const bPreencherJogos = document.getElementById('bPreencherJogos');
 
-// atribui a ação onclick do clicar no botão 
-button.onclick = function() {
+// atribui a ação onclick do clicar no botão
+bPreencherJogos.onclick = function() {
 
-    var modalidade = document.getElementById("modalidade").value;
-    var quantidadeAMarcar = document.getElementById("quantidade").value;
-    var jogos = document.getElementById("listadejogos").value;
-    var e = document.getElementById("quantidade");
-    var t = document.getElementById("qtdTeimosinha");
-    var esp = document.getElementById("espelho");
-    var qtdTeimosa = t.options[t.selectedIndex].value;
-    var quantidadeAMarcar = e.options[e.selectedIndex].value;
-    var marcaEspelho = 0;
-    if (esp.checked ) marcaEspelho = 1;
+    const modalidade = getElementValue("modalidade");
+    const input = getElementValue("listadejogos");
+    const qtdTeimosa = getElementValue("qtdTeimosinha");
+    const quantidadeAMarcar = getElementValue("quantidade");
+
+    const checkBoxEspelho = document.getElementById("espelho");
+    let marcaEspelho = false;
+    checkBoxEspelho.checked ? marcaEspelho = true : false;
 
     if (modalidade == "") {
-        alert("Por favor informe a modalidade");
-    } else if (jogos == "") {
-        alert("Preencha os jogos");
+        alert("Por favor, informe a modalidade!");
+        return
+    } else if (input == "") {
+        alert("Preencha os jogos!");
+        return
     } else {
-        var lines = jogos.split('\n');
+        let lines = input.split("\n");
+
         if (modalidade == "Loteca") {
-            for(var i = 0;i < lines.length;i++){
+            for (const [_, line] of lines.entries()) {
                 chrome.tabs.executeScript({
-                    code: "(" + modifyDOMLoteca + ")('"+ lines[i] +"');"
+                    code: `(${modifyDOMLoteca})('${line}');`
                 }, (results) => {
-                    console.log('erro');
-                });
-            };
+                    console.log("preencherJogos.onclick: ", results);
+                });                
+            }
         } else {
-		for(var i = 0;i < lines.length;i++){
-			marcaJogo( lines[i], quantidadeAMarcar, qtdTeimosa, marcaEspelho );
-			sleepFor(600); //mileseg
-		};
+            for (const [_, line] of lines.entries()) {
+                marcaJogo(line, quantidadeAMarcar, qtdTeimosa, marcaEspelho, modalidade);
+                //sleepFor(500); // ms // Não dorme mais.
+            }
         }
+        alert("Processamento concluído!");
     }
-    alert("Processamento concluído!");
 }
